@@ -99,27 +99,3 @@ python chapter_17_attention_memory_analysis/attention_memory_analysis.py
 13. Chapter 13 把 online softmax 写成教学版 Triton FlashAttention forward。
 14. Chapter 14 将该 kernel 接入 tiny self-attention，理解它与 Transformer attention 子层的关系。
 15. Chapter 15–17 转向 CS336 / LLM systems 的系统分析视角：先估算性能上限，再做可信计时和 profiling，最后分析 attention 的显存瓶颈。
-
-## 两阶段学习目标
-
-- **Chapter 00–14**：主要训练 Triton kernel 编写能力，包括 indexing、mask、reduction、fusion、matmul、autotune、LayerNorm 和教学版 FlashAttention。
-- **Chapter 15–17**：主要训练性能分析、profiling 和 memory analysis 能力，帮助判断 kernel 为什么慢、benchmark 是否可信，以及 attention 为什么受 S² 中间矩阵影响。
-
-Chapter 15 和 Chapter 17 在没有 CUDA 时仍会输出理论估算表，并明确跳过硬件测试。Chapter 16 的实践内容依赖 CUDA；没有 CUDA 时会打印说明并正常退出。Nsight 可以作为后续进阶工具，但不是本项目的硬依赖。
-
-## FlashAttention 教学版限制
-
-Chapter 13 的 kernel 只支持 contiguous fp16 `q/k/v`，shape 为 `[B,H,S,D]`，并固定 `D=64`。它仅实现 forward，不实现：
-
-- backward
-- dropout
-- variable length
-- paged attention
-- KV cache
-- GQA / MQA
-
-Chapter 14 为了教学上的章节自包含，复制了 Chapter 13 的最终稳定 FlashAttention forward kernel，并通过静态测试约束两份核心实现保持一致。真实项目中更推荐将公共 kernel 和 wrapper 抽到 `common/attention.py`，避免重复维护。
-
-## 教学版说明
-
-这些 kernel 优先保证正确、清晰和可运行，不实现 backward，也不追求工业级极限优化。Benchmark 只用于观察当前机器和输入形状下的行为，不能替代官方 Triton 教程、PyTorch 内核、官方 FlashAttention 或生产环境基准。
